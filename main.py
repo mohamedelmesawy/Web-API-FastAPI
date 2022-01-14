@@ -1,13 +1,15 @@
-from fastapi import FastAPI
+from queue import Empty
+from fastapi import FastAPI, Request
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse, HTMLResponse
-import model.baslinemodel as baslinemodel
+# import model.baslinemodel as baslinemodel
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
 from starlette.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import io
-
-
 import os
 
 app = FastAPI()
@@ -20,10 +22,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount(
+    "/static",
+    StaticFiles(directory=Path(__file__).parent.parent.absolute() / "static"),
+    name="static",
+)
+
+templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
-def root():
-    return({"message": "It works!"})
+def root(request: Request):
+    # return({"message": "It works!"})
+    return templates.TemplateResponse(
+        "index.html", {"request": request}
+    )
 
 
 @app.post("/upload")
@@ -35,12 +47,14 @@ async def upload_file(file: UploadFile = File(...)):
         image.write(content)
         image.close()
 
-    pred_main = baslinemodel.predict(image_path)
-    baslinemodel.vis_segmentation(image_path, pred_main, file.filename)
+    # pred_main = baslinemodel.predict(image_path)
+    # baslinemodel.vis_segmentation(image_path, pred_main, file.filename)
 
     # pred_path = 'filename2.png'
+    file.filename = "image.png"
     pred_path = os.path.join('predictions', file.filename)
     im_png = cv2.imread(pred_path)
+    # if !im_png.empty()
     res, im_png = cv2.imencode(".png", im_png)
     return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
     # return JSONResponse(content={"filename": file.filename}, status_code=200)
