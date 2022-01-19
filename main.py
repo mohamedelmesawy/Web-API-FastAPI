@@ -1,18 +1,21 @@
-from queue import Empty
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse, HTMLResponse
-# import model.baslinemodel as baslinemodel
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from pathlib import Path
+# import model.pretrained_model as pretrained_model
 from starlette.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+import base64
 import cv2
 import io
 import os
 
+
+# model_basline = pretrained_model.ValidationModel(model_type='baseline') 
+# model_mtkt    = pretrained_model.ValidationModel(model_type='mtkt') 
+
 app = FastAPI()
+
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
@@ -22,24 +25,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount(
-    "/static",
-    StaticFiles(directory=Path(__file__).parent.parent.absolute() / "static"),
-    name="static",
-)
-
-templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
-def root(request: Request):
-    # return({"message": "It works!"})
-    return templates.TemplateResponse(
-        "index.html", {"request": request}
-    )
+def root():
+    return({"message": "It works!"})
 
 
-@app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+@app.post("/upload/{model_type}")
+async def upload_file(model_type, file: UploadFile = File(...), isByte=False):
     image_path = os.path.join('images', file.filename)
 
     with open(image_path, 'wb') as image:
@@ -47,26 +40,71 @@ async def upload_file(file: UploadFile = File(...)):
         image.write(content)
         image.close()
 
-    # pred_main = baslinemodel.predict(image_path)
-    # baslinemodel.vis_segmentation(image_path, pred_main, file.filename)
-
-    # pred_path = 'filename2.png'
-    file.filename = "image.png"
-    pred_path = os.path.join('predictions', file.filename)
+    # if model_type == 'baseline':
+    #     pred_main = model_basline.predict(image_path)
+    #     model_basline.vis_segmentation(image_path, pred_main, file.filename)
+    # elif model_type == 'mtkt':
+    #     pred_main = model_mtkt.predict(image_path)
+    #     model_mtkt.vis_segmentation(image_path, pred_main, file.filename)
+        
+    # pred_path = os.path.join('predictions', file.filename)
+    pred_path = os.path.join('predictions', "hamburg_000000_106102_leftImg8bit.png")
     im_png = cv2.imread(pred_path)
-    # if !im_png.empty()
     res, im_png = cv2.imencode(".png", im_png)
+    
+    if isByte:
+        return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
+    return  base64.b64encode(im_png.tobytes())    
+##########################
+@app.post("/uploadfiles/{model_type}")
+async def create_upload_files(model_type, files: List[UploadFile] = File(...)):
+    print("upload files")
+    # return {"filenames": [file.filename for file in files]}
+    pred_path = os.path.join('predictions', "image.png")
+    im_png = cv2.imread(pred_path)
+    # if isByte:
     return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
-    # return JSONResponse(content={"filename": file.filename}, status_code=200)
+    # return  base64.b64encode(im_png.tobytes())    
 
+@app.get("/test2")
+async def main():
+    content = """
+<body>
+<form action="/upload/" enctype="multipart/form-data" method="post">
+<input name="files" type="file" multiple>
+<input type="submit">
+</form>
+<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+<input name="files" type="file" multiple>
+<input type="submit">
+</form>
+</body>
+    """
+    return HTMLResponse(content=content)
+##########################
 
 # @app.post("/upload")
-# def create_file(file: UploadFile = File(...)):
-#     with open(os.path.join('./images', file.filename), 'wb+') as upload_folder:
-#         shutil.copyfileobj(file.file, upload_folder)
-#         upload_folder.close()
-#     return {"filename": file.filename}
-# shutil.move(file.filename, './images/'+file.filename)
+# async def upload_file(file: UploadFile = File(...), isByte=False):
+#     image_path = os.path.join('images', file.filename)
+
+#     with open(image_path, 'wb') as image:
+#         content = await file.read()
+#         image.write(content)
+#         image.close()
+
+#     pred_main = model_basline.predict(image_path)
+#     model_basline.vis_segmentation(image_path, pred_main, file.filename)
+
+#     pred_path = os.path.join('predictions', file.filename)
+#     im_png = cv2.imread(pred_path)
+#     res, im_png = cv2.imencode(".png", im_png)
+    
+#     if isByte:
+#         return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
+#     return  base64.b64encode(im_png.tobytes())    
+
+
+
 
 
 # @app.get("/")
