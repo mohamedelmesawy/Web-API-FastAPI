@@ -56,15 +56,39 @@ async def upload_file(model_type, file: UploadFile = File(...), isByte=False):
         return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
     return  base64.b64encode(im_png.tobytes())    
 ##########################
+
 @app.post("/uploadfiles/{model_type}")
-async def create_upload_files(model_type, files: List[UploadFile] = File(...)):
-    print("upload files")
-    # return {"filenames": [file.filename for file in files]}
-    pred_path = os.path.join('predictions', "image.png")
+async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=False):
+    img = file[0]
+    image_path = os.path.join('images', img.filename)
+    ground_truth_img = file[1]
+    ground_truth_path = os.path.join('images', ground_truth_img.filename)
+
+    with open(image_path, 'wb') as image:
+        content = await img.read()
+        image.write(content)
+        image.close()
+        
+    with open(ground_truth_path, 'wb') as image:
+        content = await ground_truth_img.read()
+        image.write(content)
+        image.close()
+
+    # if model_type == 'baseline':
+    #     pred_main = model_basline.predict(image_path)
+    #     model_basline.vis_segmentation(image_path, pred_main, file.filename)
+    # elif model_type == 'mtkt':
+    #     pred_main = model_mtkt.predict(image_path)
+    #     model_mtkt.vis_segmentation(image_path, pred_main, file.filename)
+        
+    # pred_path = os.path.join('predictions', file.filename)
+    pred_path = os.path.join('predictions', "hamburg_000000_106102_leftImg8bit.png")
     im_png = cv2.imread(pred_path)
-    # if isByte:
-    return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
-    # return  base64.b64encode(im_png.tobytes())    
+    res, im_png = cv2.imencode(".png", im_png)
+    
+    if isByte:
+        return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
+    return  base64.b64encode(im_png.tobytes())   
 
 @app.get("/test2")
 async def main():
