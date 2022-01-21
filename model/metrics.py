@@ -4,8 +4,6 @@ from sklearn.metrics import confusion_matrix
 
 
 def sklearn_compute_IOU(y_pred, y_true, num_classes=7):
-    #  y_true = cv2.imread(ground_truth_path)
-     # ytrue, ypred is a flatten vector
      y_pred = y_pred.flatten()
      y_true = y_true.flatten()
      current = confusion_matrix(y_true, y_pred, labels=list(range(num_classes)))

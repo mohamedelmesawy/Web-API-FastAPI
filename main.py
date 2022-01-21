@@ -63,11 +63,13 @@ async def upload_file(model_type, file: UploadFile = File(...), isByte=False):
     # pred_path = os.path.join('predictions', "hamburg_000000_106102_leftImg8bit.png")
     im_png = cv2.imread(pred_path)
     res, im_png = cv2.imencode(".png", im_png)
+
+    pred_path = os.path.join(f'predictions_{model_type}', file.filename)
+    cv2.imwrite(pred_path, im_png)
     
     if isByte:
         return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
     return  base64.b64encode(im_png.tobytes())    
-##########################
 
 @app.post("/uploadfiles/{model_type}")
 async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=False):
@@ -131,12 +133,6 @@ async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=Fa
     # pred_path = os.path.join('predictions', "hamburg_000000_106102_leftImg8bit.png")
     im_png = cv2.imread(pred_path)
 
-    # # Add v_Padding
-    # h_padding_length = pred_main.shape[1]//7
-    # h_padding = im_png.copy()[:, :h_padding_length]
-    # h_padding[:, :] = 0
-
-    # Add h_Padding
     h_padding_length = im_png.shape[1]//6
     h_padding = im_png.copy()[:, :h_padding_length]
     h_padding[:, :] = 255
@@ -172,3 +168,20 @@ async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=Fa
     if isByte:
         return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
     return  base64.b64encode(im_png.tobytes())   
+
+# @app.get("/test2")
+# async def main():
+#     content = """
+# <body>
+# <form action="/upload/" enctype="multipart/form-data" method="post">
+# <input name="files" type="file" multiple>
+# <input type="submit">
+# </form>
+# <form action="/uploadfiles/" enctype="multipart/form-data" method="post">
+# <input name="files" type="file" multiple>
+# <input type="submit">
+# </form>
+# </body>
+#     """
+#     # return HTMLResponse(content=content)
+

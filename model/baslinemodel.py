@@ -373,5 +373,5 @@ def vis_segmentation(image_path, prediction, file_name=''):
     cv2.putText(all_images, "Overlay", (2*x + x_padding, y),
                 font, scale, color, scale, stroke)
 
-    pred_path = os.path.join('predictions', file_name)
-    cv2.imwrite(pred_path, all_images)
+    # pred_path = os.path.join('predictions', file_name)
+    # cv2.imwrite(pred_path, all_images)
