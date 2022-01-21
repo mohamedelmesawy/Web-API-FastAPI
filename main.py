@@ -55,10 +55,11 @@ async def upload_file(model_type, file: UploadFile = File(...), isByte=False):
         pred_main = model_basline.predict(image_path)
     elif model_type == 'mtkt':
         pred_main = model_mtkt.predict(image_path)
-    
-    vis_segmentation(image_path, pred_main, file.filename)
+
+    new_file_name =  model_type + '_' + file.filename 
+    vis_segmentation(image_path, pred_main, new_file_name)
   
-    pred_path = os.path.join('predictions', file.filename)
+    pred_path = os.path.join('predictions', new_file_name)
     # pred_path = os.path.join('predictions', "hamburg_000000_106102_leftImg8bit.png")
     im_png = cv2.imread(pred_path)
     res, im_png = cv2.imencode(".png", im_png)
@@ -92,8 +93,9 @@ async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=Fa
         pred_main = model_basline.predict(image_path)
     elif model_type == 'mtkt':
         pred_main = model_mtkt.predict(image_path)
-    
-    vis_segmentation(image_path, pred_main, file[0].filename)
+       
+    new_file_name =  model_type + '_' + file[0].filename 
+    vis_segmentation(image_path, pred_main, new_file_name)
 
     
 
@@ -102,9 +104,9 @@ async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=Fa
     # pred_main = cv2.resize(pred_main.astype(
     #                             'uint8'), dsize=(org_img.shape[1], org_img.shape[0]))
 
-    print("---------------> Image size ", pred_main.shape, " <----------------------")
-    print("---------------> label size ", label.shape, " <----------------------")
-    print(np.unique(label.flatten()))
+    # print("---------------> Image size ", pred_main.shape, " <----------------------")
+    # print("---------------> label size ", label.shape, " <----------------------")
+    # print(np.unique(label.flatten()))
 
     # def fast_hist(a, b, n=7):
     #     k = (a >= 0) & (a < n)
@@ -121,11 +123,11 @@ async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=Fa
     # print("hist MIOU ----------> ", )
     
     mIoU, IoU_list = compute_IOU(pred_main, label)
-    print("MIoU :", mIoU)
-    print("IoU list:")
-    print(IoU_list)
+    # print("MIoU :", mIoU)
+    # print("IoU list:")
+    # print(IoU_list)
         
-    pred_path = os.path.join('predictions', file[0].filename)
+    pred_path = os.path.join('predictions', new_file_name)
     # pred_path = os.path.join('predictions', "hamburg_000000_106102_leftImg8bit.png")
     im_png = cv2.imread(pred_path)
 
@@ -157,12 +159,12 @@ async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=Fa
     iou_list_start = 175
     for i, class_name in enumerate(classes):
         offset = i * 110
-        print(color_map[i])
+        # print(color_map[i])
         color = tuple(color_map[i])
         im_png = cv2.putText(im_png, "{}= {:.2f}%".format(class_name, IoU_list[i] * 100), (text_h_start, (iou_list_start + offset)), font, scale, color, stroke)
 
     pred_path = os.path.join('predictions', img.filename)
-    print(pred_path)
+    # print(pred_path)
     cv2.imwrite(pred_path, im_png)
 
     res, im_png = cv2.imencode(".png", im_png)
@@ -170,56 +172,3 @@ async def upload_files(model_type, file: List[UploadFile] = File(...), isByte=Fa
     if isByte:
         return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
     return  base64.b64encode(im_png.tobytes())   
-
-@app.get("/test2")
-async def main():
-    content = """
-<body>
-<form action="/upload/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-</body>
-    """
-    return HTMLResponse(content=content)
-##########################
-
-# @app.post("/upload")
-# async def upload_file(file: UploadFile = File(...), isByte=False):
-#     image_path = os.path.join('images', file.filename)
-
-#     with open(image_path, 'wb') as image:
-#         content = await file.read()
-#         image.write(content)
-#         image.close()
-
-#     pred_main = model_basline.predict(image_path)
-#     model_basline.vis_segmentation(image_path, pred_main, file.filename)
-
-#     pred_path = os.path.join('predictions', file.filename)
-#     im_png = cv2.imread(pred_path)
-#     res, im_png = cv2.imencode(".png", im_png)
-    
-#     if isByte:
-#         return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
-#     return  base64.b64encode(im_png.tobytes())    
-
-
-
-
-
-# @app.get("/")
-# async def root():
-#     content = """
-#         <body>
-#             <form action="/upload/" enctype="multipart/form-data" method="post">
-#                 <input name="files" type="file">
-#                 <input type="submit">
-#             </form>
-#         </body>
-#     """
-#     return HTMLResponse(content=content)

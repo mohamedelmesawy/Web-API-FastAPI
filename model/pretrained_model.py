@@ -213,6 +213,6 @@ def vis_segmentation(image_path, prediction, file_name=''):
                 font, scale, color, scale, stroke)
 
     pred_path = os.path.join('predictions', file_name)
-    print(pred_path)
+    # print(pred_path)
     cv2.imwrite(pred_path, all_images)
   
