@@ -24,16 +24,16 @@ This project is a Web API for Urban Scene Segmentation for Autonomous Car, using
 Our first Model `Baseline` strategy is to merge all target datasets into a single one and then deal as a single target.
 ~~~
 <div align="center" id="top" > 
-  <img src="https://user-images.githubusercontent.com/24257959/152067945-b462b4fa-6599-4fae-94a5-841378ef7e8b.png" style="max-width: 50%;">
+  <img src="https://user-images.githubusercontent.com/24257959/152067945-b462b4fa-6599-4fae-94a5-841378ef7e8b.png" width=50%>
 </div>
 
 ## MTKT ##
 ~~~
 our second model `MTKT` is a multi-target knowledge transfer, which has a target-specific teacher for each specific target that learns a target-agnostic model thanks to a multi-teacher/single-student distillation mechanism.
 ~~~
-<div align="center" id="top" style="max-width: 40%;"> 
+<div align="center" id="top"> 
   
-  ![image](https://user-images.githubusercontent.com/24257959/152068123-d6e60e89-c9ce-483a-95a8-0387371b6ba8.png)
+  <img src="https://user-images.githubusercontent.com/24257959/152068123-d6e60e89-c9ce-483a-95a8-0387371b6ba8.png" width=40%>
 </div>
 
 The UI for this api is found in [Web-Application-Client-Flask](https://github.com/mohamedelmesawy/Web-Application-Client-Flask) repo.
@@ -77,3 +77,6 @@ By RAM-Team: <a href="https://github.com/mohamedelmesawy" target="_blank">MOhame
 
 ## Acknowledgements ##
 The pretrained models are borrowed from [MTAF](https://github.com/mohamedelmesawy/MTAF).
+
+
+<a href="#top">Back to top</a>
